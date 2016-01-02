@@ -5,7 +5,7 @@
 		<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
 		<title>YouBike Taipei</title>
 
-		<link href="lib/ionic/css/ionic.css" rel="stylesheet">
+		<link href="lib/ionic/release/css/ionic.css" rel="stylesheet">
 		<link href="css/style.css" rel="stylesheet">
 
 		<!-- IF using Sass (run gulp sass first), then uncomment below and remove the CSS includes above
@@ -13,7 +13,7 @@
 		-->
 
 		<!-- ionic/angularjs js -->
-		<script src="lib/ionic/js/ionic.bundle.js"></script>
+		<script src="lib/ionic/release/js/ionic.bundle.js"></script>
 
 		<script src="https://maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyBGfafd0oZikkBOLHw4ZjeXBbVKivosx04"></script>
 
@@ -26,6 +26,7 @@
 
 		<!-- your app's js -->
 		<script src="js/app.js"></script>
+		<script src="js/directions.js"></script>
 	</head>
 	<body ng-app="starter" ng-controller="AppController" ng-init="init()">
 		<script type="text/ng-template" id="search.tpl.html">
@@ -39,6 +40,11 @@
 		</script>
 		<script type="text/ng-template" id="setdestination.tpl.html">
 			<p>Set the destination to {{ destination.name }} ( {{ destination.lat }}, {{ destination.lng }} ) ?</p>
+		</script>
+		<script type="text/ng-template" id="help.tpl.html">
+			<p>Hello! Welcome to YouBike Taipei Navigation. Here are some instructions to get you started.</p>
+			<p>The markers on the maps indicate locations of YouBike sites. The red marker tells that the site is almost without available bike.</p>
+			<p>To navigate youself through Taipei with YouBike, simply type in and select your starting location in the search box, then type in and select the destination. Wait for a few seconds, then the map will tell you where to get a bike, and where you should ride to.</p>
 		</script>
 		<ion-side-menus>
 			<ion-side-menu-content drag-content="false">
@@ -65,6 +71,12 @@
 				<ion-header-bar class="bar-dark">
 					<h1 class="title">Menu</h1>
 				</ion-header-bar>
+				<ion-content>
+					<ion-list>
+						<ion-item menu-close ng-click="showHelp()">
+							Instructions
+						</ion-item>
+					</ion-list>
 			</ion-side-menu>
 		</ion-side-menus>
 	</body>

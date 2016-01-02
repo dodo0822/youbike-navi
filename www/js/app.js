@@ -23,9 +23,24 @@ angular.module('starter', ['ionic', 'uiGmapgoogle-maps'])
 	});
 })
 
-.controller('AppController', function($scope, $http, $ionicPopup) {
+.controller('AppController', function($scope, $http, $ionicPopup, GmapDirections, $q) {
+
+	$scope.showHelp = function() {
+		$ionicPopup.alert({
+			title: 'Hi',
+			templateUrl: 'help.tpl.html'
+		});
+	};
 
 	$scope.init = function() {
+		if(!window.localStorage['first']) {
+			window.localStorage['first'] = '1';
+			$ionicPopup.alert({
+				title: 'Hi',
+				templateUrl: 'help.tpl.html'
+			});
+		}
+
 		$http.get('data/stations.json').then(function(resp) {
 			for(var i = 0; i < resp.data.length; ++i) {
 				resp.data[i].icon = 'img/marker_low.png';
@@ -207,129 +222,135 @@ angular.module('starter', ['ionic', 'uiGmapgoogle-maps'])
 				}
 
 				//console.log(startStation);
-
-				var dService = new google.maps.DirectionsService;
-				dService.route({
-					origin: $scope.map.navi.orig.lat + ',' + $scope.map.navi.orig.lng,
-					destination: startStation.coords.latitude + ',' + startStation.coords.longitude,
-					travelMode: google.maps.TravelMode.WALKING
-				}, function(resp, status) {
-					if(status == google.maps.DirectionsStatus.OK) {
-						var polyline = {
-							id: $scope.map.navi.counter++,
-							coords: [],
-							stroke: {
-								color: '#FF0000',
-								weight: 3
-							},
-							visible: true
-						};
-						var route = resp.routes[0];
-						for(var i = 0; i < route.legs.length; ++i) {
-							var leg = route.legs[i];
-							for(var j = 0; j < leg.steps.length; ++j) {
-								var step = leg.steps[j];
+				var promises = [];
+				
+				promises.push(GmapDirections.getDirections(
+					$scope.map.navi.orig.lat, $scope.map.navi.orig.lng,
+					startStation.coords.latitude, startStation.coords.longitude
+				).then(function(resp) {
+					var polyline = {
+						id: $scope.map.navi.counter++,
+						coords: [],
+						stroke: {
+							color: '#FF0000',
+							weight: 3
+						},
+						visible: true
+					};
+					var route = resp.routes[0];
+					for(var i = 0; i < route.legs.length; ++i) {
+						var leg = route.legs[i];
+						for(var j = 0; j < leg.steps.length; ++j) {
+							var step = leg.steps[j];
+							polyline.coords.push({
+								latitude: step.start_location.lat(),
+								longitude: step.start_location.lng()
+							});
+							if(j == leg.steps.length-1) {
 								polyline.coords.push({
-									latitude: step.start_location.lat(),
-									longitude: step.start_location.lng()
+									latitude: step.end_location.lat(),
+									longitude: step.end_location.lng()
 								});
-								if(j == leg.steps.length-1) {
-									polyline.coords.push({
-										latitude: step.end_location.lat(),
-										longitude: step.end_location.lng()
-									});
-								}
 							}
 						}
-						$scope.map.navi.path.push(polyline);
-					} else {
-						$ionicPopup.alert({
-							title: 'Error',
-							template: '<p>Can\'t get directions!</p>'
-						});
 					}
-				});
+					$scope.map.navi.path.push(polyline);
+					$q.resolve();
+				}, function(status) {
+					$ionicPopup.alert({
+						title: 'Error',
+						template: '<p>Can\'t get directions: ' + status + '</p>'
+					});
+					$q.reject();
+				}));
 
-				dService.route({
-					origin: startStation.coords.latitude + ',' + startStation.coords.longitude,
-					destination: endStation.coords.latitude + ',' + endStation.coords.longitude,
-					travelMode: google.maps.TravelMode.WALKING
-				}, function(resp, status) {
-					if(status == google.maps.DirectionsStatus.OK) {
-						var polyline = {
-							id: $scope.map.navi.counter++,
-							coords: [],
-							stroke: {
-								color: '#00FF00',
-								weight: 3
-							},
-							visible: true
-						};
-						var route = resp.routes[0];
-						for(var i = 0; i < route.legs.length; ++i) {
-							var leg = route.legs[i];
-							for(var j = 0; j < leg.steps.length; ++j) {
-								var step = leg.steps[j];
+				promises.push(GmapDirections.getDirections(
+					startStation.coords.latitude, startStation.coords.longitude,
+					endStation.coords.latitude, endStation.coords.longitude
+				).then(function(resp) {
+					var polyline = {
+						id: $scope.map.navi.counter++,
+						coords: [],
+						stroke: {
+							color: '#00FF00',
+							weight: 3
+						},
+						visible: true
+					};
+					var route = resp.routes[0];
+					for(var i = 0; i < route.legs.length; ++i) {
+						var leg = route.legs[i];
+						for(var j = 0; j < leg.steps.length; ++j) {
+							var step = leg.steps[j];
+							polyline.coords.push({
+								latitude: step.start_location.lat(),
+								longitude: step.start_location.lng()
+							});
+							if(j == leg.steps.length-1) {
 								polyline.coords.push({
-									latitude: step.start_location.lat(),
-									longitude: step.start_location.lng()
+									latitude: step.end_location.lat(),
+									longitude: step.end_location.lng()
 								});
-								if(j == leg.steps.length-1) {
-									polyline.coords.push({
-										latitude: step.end_location.lat(),
-										longitude: step.end_location.lng()
-									});
-								}
 							}
 						}
-						$scope.map.navi.path.push(polyline);
-					} else {
-						$ionicPopup.alert({
-							title: 'Error',
-							template: '<p>Can\'t get directions!</p>'
-						});
 					}
-				});
+					$scope.map.navi.path.push(polyline);
+					$q.resolve();
+				}, function(status) {
+					$ionicPopup.alert({
+						title: 'Error',
+						template: '<p>Can\'t get directions: ' + status + '</p>'
+					});
+					$q.reject();
+				}));
 
-				dService.route({
-					origin: endStation.coords.latitude + ',' + endStation.coords.longitude,
-					destination: $scope.map.navi.dest.lat + ',' + $scope.map.navi.dest.lng,
-					travelMode: google.maps.TravelMode.WALKING
-				}, function(resp, status) {
-					if(status == google.maps.DirectionsStatus.OK) {
-						var polyline = {
-							id: $scope.map.navi.counter++,
-							coords: [],
-							stroke: {
-								color: '#FF0000',
-								weight: 3
-							},
-							visible: true
-						};
-						var route = resp.routes[0];
-						for(var i = 0; i < route.legs.length; ++i) {
-							var leg = route.legs[i];
-							for(var j = 0; j < leg.steps.length; ++j) {
-								var step = leg.steps[j];
+				promises.push(GmapDirections.getDirections(
+					endStation.coords.latitude, endStation.coords.longitude,
+					$scope.map.navi.dest.lat, $scope.map.navi.dest.lng
+				).then(function(resp) {
+					var polyline = {
+						id: $scope.map.navi.counter++,
+						coords: [],
+						stroke: {
+							color: '#FF0000',
+							weight: 3
+						},
+						visible: true
+					};
+					var route = resp.routes[0];
+					for(var i = 0; i < route.legs.length; ++i) {
+						var leg = route.legs[i];
+						for(var j = 0; j < leg.steps.length; ++j) {
+							var step = leg.steps[j];
+							polyline.coords.push({
+								latitude: step.start_location.lat(),
+								longitude: step.start_location.lng()
+							});
+							if(j == leg.steps.length-1) {
 								polyline.coords.push({
-									latitude: step.start_location.lat(),
-									longitude: step.start_location.lng()
+									latitude: step.end_location.lat(),
+									longitude: step.end_location.lng()
 								});
-								if(j == leg.steps.length-1) {
-									polyline.coords.push({
-										latitude: step.end_location.lat(),
-										longitude: step.end_location.lng()
-									});
-								}
 							}
 						}
-						$scope.map.navi.path.push(polyline);
-					} else {
-						$ionicPopup.alert({
-							title: 'Error',
-							template: '<p>Can\'t get directions!</p>'
-						});
 					}
+					$scope.map.navi.path.push(polyline);
+					$q.resolve();
+				}, function(status) {
+					$ionicPopup.alert({
+						title: 'Error',
+						template: '<p>Can\'t get directions: ' + status + '</p>'
+					});
+					$q.reject();
+				}));
+				
+				$q.all(promises).then(function() {
+					$scope.map.center = {
+						latitude: $scope.map.navi.orig.lat,
+						longitude: $scope.map.navi.orig.lng
+					};
+					$scope.map.zoom = 16;
+
 				});
 			}
 		}
