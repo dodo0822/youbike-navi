@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+		<title>YouBike Taipei</title>
+
+		<link href="lib/ionic/css/ionic.css" rel="stylesheet">
+		<link href="css/style.css" rel="stylesheet">
+
+		<!-- IF using Sass (run gulp sass first), then uncomment below and remove the CSS includes above
+		<link href="css/ionic.app.css" rel="stylesheet">
+		-->
+
+		<!-- ionic/angularjs js -->
+		<script src="lib/ionic/js/ionic.bundle.js"></script>
+
+		<script src="https://maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyBGfafd0oZikkBOLHw4ZjeXBbVKivosx04"></script>
+
+		<script src="lib/lodash/lodash.min.js"></script>
+		<script src="lib/angular-simple-logger/dist/angular-simple-logger.min.js"></script>
+		<script src="lib/angular-google-maps/dist/angular-google-maps.min.js"></script>
+
+		<!-- cordova script (this will be a 404 during development) -->
+		<script src="cordova.js"></script>
+
+		<!-- your app's js -->
+		<script src="js/app.js"></script>
+	</head>
+	<body ng-app="starter" ng-controller="AppController" ng-init="init()">
+		<script type="text/ng-template" id="search.tpl.html">
+			<input type="text" placeholder="{{ $parent.map.search.placeholder }}" ng-model="$parent.map.search.value" class="controls" id="pac-input">
+		</script>
+		<script type="text/ng-template" id="mapbutton.tpl.html">
+			<div id="reset-button" ng-show="$parent.$parent.$parent.$parent.$parent.$parent.map.navi.state != 0" ng-click="reset()">Reset</div>
+		</script>
+		<script type="text/ng-template" id="setorigin.tpl.html">
+			<p>Set the origin to {{ origin.name }} ( {{ origin.lat }}, {{ origin.lng }} ) ?</p>
+		</script>
+		<script type="text/ng-template" id="setdestination.tpl.html">
+			<p>Set the destination to {{ destination.name }} ( {{ destination.lat }}, {{ destination.lng }} ) ?</p>
+		</script>
+		<ion-side-menus>
+			<ion-side-menu-content drag-content="false">
+				<ion-header-bar>
+					<button class="button button-icon button-clear ion-navicon" menu-toggle="left"></button>
+					<h1 class="title">YouBike Taipei</h1>
+				</ion-header-bar>
+				<ion-view>
+					<ion-content data-tap-disabled="true" class="has-header">
+						<ui-gmap-google-map center="map.center" zoom="map.zoom" events="map.events">
+							<ui-gmap-search-box template="map.search.template" events="map.search.events"></ui-gmap-search-box>
+							<ui-gmap-window show="map.window.show" coords="map.window.model.coords" options="map.window.options" closeclick="map.window.closeClick()">
+								<p><strong>{{ map.window.model.name }}</strong><br>{{ map.window.model.desc }}<br>Available/total bikes: {{ map.window.model.avail }}/{{ map.window.model.total }}</p>
+							</ui-gmap-window>
+							<ui-gmap-markers models="map.stations" coords="'coords'" events="map.markersEvents" icon="'icon'"></ui-gmap-markers>
+							<ui-gmap-polylines models="map.navi.path" path="'coords'" static="true" stroke="'stroke'" visible="'visible'"></ui-gmap-polylines>
+							<ui-gmap-map-control template="mapbutton.tpl.html" controller="ResetButtonController" position="bottom-right" index="-1"></ui-gmap-map-control>
+						</ui-gmap-google-map>
+					</ion-content>
+				</ion-view>
+			</ion-side-menu-content>
+
+			<ion-side-menu side="left">
+				<ion-header-bar class="bar-dark">
+					<h1 class="title">Menu</h1>
+				</ion-header-bar>
+			</ion-side-menu>
+		</ion-side-menus>
+	</body>
+</html>

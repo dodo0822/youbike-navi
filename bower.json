@@ -1,0 +1,10 @@
+{
+  "name": "HelloIonic",
+  "private": "true",
+  "devDependencies": {
+    "ionic": "driftyco/ionic#1.2.2"
+  },
+  "dependencies": {
+    "angular-google-maps": "~2.2.1"
+  }
+}
