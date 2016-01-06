@@ -23,7 +23,7 @@ angular.module('starter', ['ionic', 'uiGmapgoogle-maps'])
 	});
 })
 
-.controller('AppController', function($scope, $http, $ionicPopup, GmapDirections, $q) {
+.controller('AppController', function($scope, $http, $ionicPopup, GmapDirections, $q, $ionicLoading) {
 
 	$scope.showHelp = function() {
 		$ionicPopup.alert({
@@ -190,7 +190,34 @@ angular.module('starter', ['ionic', 'uiGmapgoogle-maps'])
 				$scope.map.search.placeholder = 'Search origin..';
 				$scope.map.search.value = '';
 			},
+			geolocation: function() {
+				navigator.geolocation.getCurrentPosition(function(position) {
+					var ns = $scope.$new(false);
+					ns.origin = {
+						name: 'Your current location',
+						lat: position.coords.latitude,
+						lng: position.coords.longitude
+					};
+					$ionicPopup.confirm({
+						templateUrl: 'setorigin.tpl.html',
+						title: 'Set origin',
+						scope: ns
+					}).then(function(ok) {
+						if(ok) {
+							$scope.map.navi.state = 1;
+							$scope.map.search.placeholder = 'Search destination..';
+							$scope.map.search.value = '';
+							$scope.map.navi.orig.name = 'Your current location';
+							$scope.map.navi.orig.lat = position.coords.latitude;
+							$scope.map.navi.orig.lng = position.coords.longitude;
+						}
+					});
+				});
+			},
 			start: function() {
+				$ionicLoading.show({
+					template: 'Calculating path..'
+				});
 				$scope.map.navi.path = [];
 				// search nearast station
 				var startStation = {};
@@ -350,7 +377,9 @@ angular.module('starter', ['ionic', 'uiGmapgoogle-maps'])
 						longitude: $scope.map.navi.orig.lng
 					};
 					$scope.map.zoom = 16;
-
+					$ionicLoading.hide();
+				}, function() {
+					$ionicLoading.hide();
 				});
 			}
 		}
@@ -360,5 +389,11 @@ angular.module('starter', ['ionic', 'uiGmapgoogle-maps'])
 .controller('ResetButtonController', function($scope) {
 	$scope.reset = function() {
 		$scope.$parent.$parent.$parent.$parent.$parent.$parent.map.navi.reset();
+	};
+})
+
+.controller('GeolocationButtonController', function($scope) {
+	$scope.geolocation = function() {
+		$scope.$parent.$parent.$parent.$parent.$parent.$parent.map.navi.geolocation();
 	};
 });
