@@ -23,7 +23,7 @@ angular.module('starter', ['ionic', 'uiGmapgoogle-maps'])
 	});
 })
 
-.controller('AppController', function($scope, $http, $ionicPopup, GmapDirections, $q, $ionicLoading) {
+.controller('AppController', function($scope, $http, $ionicPopup, GmapDirections, GmapGeocoder, $q, $ionicLoading) {
 
 	$scope.showHelp = function() {
 		$ionicPopup.alert({
@@ -33,11 +33,15 @@ angular.module('starter', ['ionic', 'uiGmapgoogle-maps'])
 	};
 
 	$scope.init = function() {
+		$ionicLoading.show({
+			template: 'Loading map...',
+		});
 		if(!window.localStorage['first']) {
 			window.localStorage['first'] = '1';
 			$ionicPopup.alert({
 				title: 'Hi',
-				templateUrl: 'help.tpl.html'
+				templateUrl: 'help.tpl.html',
+				cssClass: 'help-popup'
 			});
 		}
 
@@ -95,7 +99,17 @@ angular.module('starter', ['ionic', 'uiGmapgoogle-maps'])
 		events: {
 			tilesloaded: function(map) {
 				$scope.map.instance = map;
-			}
+				$ionicLoading.hide();
+				$scope.map.events.click = function(map,eventName,mouseEvent){
+					$scope.map.navi.click(mouseEvent[0].latLng);
+					mouseEvent[0].stop();
+				}
+			},
+			click: function(){}
+		},
+		options :{
+			disableDoubleClickZoom: true,
+			streetViewControl: false
 		},
 		stations: [],
 		markersEvents: {
@@ -110,7 +124,54 @@ angular.module('starter', ['ionic', 'uiGmapgoogle-maps'])
 			closeClick: function() {
 				this.show = false;
 			},
-			options: {}
+			options: {
+				maxWidth: 300
+			},
+			onSet: function(){
+
+				var site = $scope.map.window.model;
+				var ns = $scope.$new(false);
+				var loc = {
+					name: site.name + "Youbike站",
+					lat: site.coords.latitude,
+					lng: site.coords.longitude
+				};
+				if($scope.map.navi.state == 0) {
+					// open origin confirm
+					$scope.map.navi.path = [];
+					$scope.map.navi.counter = 0;
+					ns.origin = loc;
+					$ionicPopup.confirm({
+						templateUrl: 'setorigin.tpl.html',
+						title: 'Set origin',
+						scope: ns
+					}).then(function(ok) {
+						if(ok) {
+							$scope.map.navi.state = 1;
+							$scope.map.search.placeholder = 'Search destination..';
+							$scope.map.search.value = '';
+							$scope.map.navi.orig = loc ;
+							$scope.map.window.show = false;
+						}
+					});
+				} else if($scope.map.navi.state == 1) {
+					ns.destination = loc;
+					$ionicPopup.confirm({
+						templateUrl: 'setdestination.tpl.html',
+						title: 'Set destination',
+						scope: ns
+					}).then(function(ok) {
+						if(ok) {
+							$scope.map.navi.state = 0;
+							$scope.map.search.placeholder = 'Search origin..';
+							$scope.map.search.value = '';
+							$scope.map.navi.dest = loc;
+							$scope.map.navi.start();
+							$scope.map.window.show = false;
+						}
+					});
+				}
+			}
 		},
 		search: {
 			template: 'search.tpl.html',
@@ -123,6 +184,8 @@ angular.module('starter', ['ionic', 'uiGmapgoogle-maps'])
 
 					if($scope.map.navi.state == 0) {
 						// open origin confirm
+						$scope.map.navi.path = [];
+						$scope.map.navi.counter = 0;
 						var ns = $scope.$new(false);
 						ns.origin = {
 							name: place.name,
@@ -191,7 +254,13 @@ angular.module('starter', ['ionic', 'uiGmapgoogle-maps'])
 				$scope.map.search.value = '';
 			},
 			geolocation: function() {
+				$ionicLoading.show({
+					template: "Locating current position..."
+				});
 				navigator.geolocation.getCurrentPosition(function(position) {
+					$ionicLoading.hide();
+					$scope.map.navi.path = [];
+					$scope.map.navi.counter = 0;
 					var ns = $scope.$new(false);
 					ns.origin = {
 						name: 'Your current location',
@@ -213,6 +282,65 @@ angular.module('starter', ['ionic', 'uiGmapgoogle-maps'])
 						}
 					});
 				});
+			},
+			click: function(latLng) {
+				
+				$ionicLoading.show({
+					template: 'Fetching location data..'
+				});
+				GmapGeocoder.getLocation(latLng).then(function(resp){
+					$ionicLoading.hide();
+					var ns = $scope.$new(false);
+					var loc = {
+							name: resp.formatted_address,
+							lat: resp.geometry.location.lat(),
+							lng: resp.geometry.location.lng(),
+						};
+					if( $scope.map.navi.state == 0){
+						$scope.map.navi.path = [];
+						$scope.map.navi.counter = 0;
+						ns.origin = loc;
+						$ionicPopup.confirm({
+							templateUrl: 'setorigin.tpl.html',
+							title: 'Set origin',
+							scope: ns
+						}).then(function(ok){
+							if(ok){
+								$scope.map.navi.state = 1;
+								$scope.map.search.placeholder = 'Search destination..';
+								$scope.map.search.value = '';
+								$scope.map.navi.orig = ns.origin;	
+							}
+						});	
+					}
+					else{
+						ns.destination = loc;
+						$ionicPopup.confirm({
+							templateUrl: 'setdestination.tpl.html',
+							title: 'Set destination',
+							scope: ns
+						}).then(function(ok){
+							if(ok){
+								$scope.map.navi.state = 0;
+								$scope.map.search.placeholder = 'Search origin..';
+								$scope.map.search.value = '';
+								$scope.map.navi.dest = ns.destination;
+								$scope.map.navi.start();
+							}
+						})
+					}
+					$q.resolve();
+				},function(status){
+					$ionicLoading.show({
+						template: 'Fetching location data..'
+					});
+					$ionicPopup.alert({
+						title: 'Error',
+						template: '<p>Can\'t get location: ' + status + '</p>'
+					});
+					$q.reject();
+				});
+
 			},
 			start: function() {
 				$ionicLoading.show({

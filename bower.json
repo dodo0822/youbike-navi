@@ -5,6 +5,7 @@
     "ionic": "driftyco/ionic#1.2.2"
   },
   "dependencies": {
-    "angular-google-maps": "~2.2.1"
+    "angular-google-maps": "~2.2.1",
+    "ionicons": "~2.0.1"
   }
 }

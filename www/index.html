@@ -3,10 +3,12 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+		<meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline';">
 		<title>YouBike Taipei</title>
 
 		<link href="lib/ionic/release/css/ionic.css" rel="stylesheet">
 		<link href="css/style.css" rel="stylesheet">
+		<link rel="stylesheet" href="lib/ionicons/css/ionicons.css">
 
 		<!-- IF using Sass (run gulp sass first), then uncomment below and remove the CSS includes above
 		<link href="css/ionic.app.css" rel="stylesheet">
@@ -27,6 +29,7 @@
 		<!-- your app's js -->
 		<script src="js/app.js"></script>
 		<script src="js/directions.js"></script>
+		<script src="js/geocoder.js"></script>
 	</head>
 	<body ng-app="starter" ng-controller="AppController" ng-init="init()">
 		<script type="text/ng-template" id="search.tpl.html">
@@ -36,7 +39,7 @@
 			<div id="reset-button" ng-show="$parent.$parent.$parent.$parent.$parent.$parent.map.navi.state != 0" ng-click="reset()" class="map-button">Reset</div>
 		</script>
 		<script type="text/ng-template" id="locbutton.tpl.html">
-			<div id="geolocation-button" ng-show="$parent.$parent.$parent.$parent.$parent.$parent.map.navi.state == 0" ng-click="geolocation()" class="map-button">Use my location</div>
+			<div id="geolocation-button" ng-show="$parent.$parent.$parent.$parent.$parent.$parent.map.navi.state == 0" ng-click="geolocation()" class="button button-small map-button"><i class="icon ion-android-locate"></i</div>
 		</script>
 		<script type="text/ng-template" id="setorigin.tpl.html">
 			<p>Set the origin to {{ origin.name }} ( {{ origin.lat }}, {{ origin.lng }} ) ?</p>
@@ -48,6 +51,7 @@
 			<p>Hello! Welcome to YouBike Taipei Navigation. Here are some instructions to get you started.</p>
 			<p>The markers on the maps indicate locations of YouBike sites. The red marker tells that the site is almost without available bike.</p>
 			<p>To navigate youself through Taipei with YouBike, simply type in and select your starting location in the search box, then type in and select the destination. Wait for a few seconds, then the map will tell you where to get a bike, and where you should ride to.</p>
+			<p>You can also click on any arbitrary place in the map to select the desired locations to start and end.</p>
 			<p>If you want to get to this text again, just click the "Instructions" in the menu.</p>
 		</script>
 		<ion-side-menus>
@@ -58,15 +62,20 @@
 				</ion-header-bar>
 				<ion-view>
 					<ion-content data-tap-disabled="true" class="has-header">
-						<ui-gmap-google-map center="map.center" zoom="map.zoom" events="map.events">
+						<ui-gmap-google-map center="map.center" zoom="map.zoom" events="map.events" options="map.options">
 							<ui-gmap-search-box template="map.search.template" events="map.search.events"></ui-gmap-search-box>
-							<ui-gmap-window show="map.window.show" coords="map.window.model.coords" options="map.window.options" closeclick="map.window.closeClick()">
-								<p><strong>{{ map.window.model.name }}</strong><br>{{ map.window.model.desc }}<br>Available/total bikes: {{ map.window.model.avail }}/{{ map.window.model.total }}</p>
+							<ui-gmap-window show="map.window.show" coords="map.window.model.coords" options="map.window.options" closeclick="map.window.closeClick()" ng-cloak>
+								<div height="100px" width="300px" class="scrollFix">
+									<p>
+										<strong>{{ map.window.model.name }}</strong><br>{{ map.window.model.desc }}<br>Available/total bikes: {{ map.window.model.avail }}/{{ map.window.model.total }}
+									</p>
+									<button class="button button-positive button-small button-block" ng-click="$parent.map.window.onSet()">{{ map.navi.state ? "Set as destination" : "Set as origin"}}</button>
+								</div>
 							</ui-gmap-window>
 							<ui-gmap-markers models="map.stations" coords="'coords'" events="map.markersEvents" icon="'icon'"></ui-gmap-markers>
 							<ui-gmap-polylines models="map.navi.path" path="'coords'" static="true" stroke="'stroke'" visible="'visible'"></ui-gmap-polylines>
 							<ui-gmap-map-control template="mapbutton.tpl.html" controller="ResetButtonController" position="bottom-right" index="-1"></ui-gmap-map-control>
-							<ui-gmap-map-control template="locbutton.tpl.html" controller="GeolocationButtonController" position="top-right" index="-1"></ui-gmap-map-control>
+							<ui-gmap-map-control template="locbutton.tpl.html" controller="GeolocationButtonController" position="right-bottom" index="-1"></ui-gmap-map-control>
 						</ui-gmap-google-map>
 					</ion-content>
 				</ion-view>

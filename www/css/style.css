@@ -45,6 +45,16 @@ ui-gmap-google-map {
 	padding: 5px;
 	margin-top: 5px;
 	margin-bottom: 5px;
-	margin-right: 5px;
+	margin-right: 10px;
 	cursor: pointer;
+}
+
+.help-popup{
+	z-index: 99;
+}
+
+.scrollFix {
+    line-height: 1.35;
+    overflow: hidden;
+    white-space: nowrap;
 }
