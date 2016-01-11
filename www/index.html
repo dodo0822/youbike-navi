@@ -36,10 +36,10 @@
 			<input type="text" placeholder="{{ $parent.map.search.placeholder }}" ng-model="$parent.map.search.value" class="controls" id="pac-input">
 		</script>
 		<script type="text/ng-template" id="mapbutton.tpl.html">
-			<div id="reset-button" ng-show="$parent.$parent.$parent.$parent.$parent.$parent.map.navi.state != 0" ng-click="reset()" class="map-button">Reset</div>
+			<div id="reset-button" ng-show="$parent.$parent.$parent.$parent.$parent.$parent.map.navi.state != 0" ng-click="reset()" class="button button-small map-button"><i class="icon ion-android-close"></i></div>
 		</script>
 		<script type="text/ng-template" id="locbutton.tpl.html">
-			<div id="geolocation-button" ng-show="$parent.$parent.$parent.$parent.$parent.$parent.map.navi.state == 0" ng-click="geolocation()" class="button button-small map-button"><i class="icon ion-android-locate"></i</div>
+			<div id="geolocation-button" ng-show="$parent.$parent.$parent.$parent.$parent.$parent.map.navi.state == 0" ng-click="geolocation()" class="button button-small map-button"><i class="icon ion-android-locate"></i></div>
 		</script>
 		<script type="text/ng-template" id="setorigin.tpl.html">
 			<p>Set the origin to {{ origin.name }} ( {{ origin.lat }}, {{ origin.lng }} ) ?</p>
@@ -74,7 +74,7 @@
 							</ui-gmap-window>
 							<ui-gmap-markers models="map.stations" coords="'coords'" events="map.markersEvents" icon="'icon'"></ui-gmap-markers>
 							<ui-gmap-polylines models="map.navi.path" path="'coords'" static="true" stroke="'stroke'" visible="'visible'"></ui-gmap-polylines>
-							<ui-gmap-map-control template="mapbutton.tpl.html" controller="ResetButtonController" position="bottom-right" index="-1"></ui-gmap-map-control>
+							<ui-gmap-map-control template="mapbutton.tpl.html" controller="ResetButtonController" position="right-bottom" index="-1"></ui-gmap-map-control>
 							<ui-gmap-map-control template="locbutton.tpl.html" controller="GeolocationButtonController" position="right-bottom" index="-1"></ui-gmap-map-control>
 						</ui-gmap-google-map>
 					</ion-content>

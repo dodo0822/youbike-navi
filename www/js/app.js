@@ -281,6 +281,8 @@ angular.module('starter', ['ionic', 'uiGmapgoogle-maps'])
 							$scope.map.navi.orig.lng = position.coords.longitude;
 						}
 					});
+				},function(err){
+					$ionicLoading.hide();
 				});
 			},
 			click: function(latLng) {
