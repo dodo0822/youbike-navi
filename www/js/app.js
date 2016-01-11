@@ -245,9 +245,12 @@ angular.module('starter', ['ionic', 'uiGmapgoogle-maps'])
 				lat: 0,
 				lng: 0
 			},
+			startStation: {},
+			endStation: {},
 			path: [],
 			state: 0,
 			counter: 0,
+			complete: false,
 			reset: function() {
 				$scope.map.navi.state = 0;
 				$scope.map.search.placeholder = 'Search origin..';
@@ -313,7 +316,7 @@ angular.module('starter', ['ionic', 'uiGmapgoogle-maps'])
 								$scope.map.search.value = '';
 								$scope.map.navi.orig = ns.origin;	
 							}
-						});	
+						});
 					}
 					else{
 						ns.destination = loc;
@@ -377,6 +380,9 @@ angular.module('starter', ['ionic', 'uiGmapgoogle-maps'])
 						endStation = station;
 					}
 				}
+
+				$scope.map.navi.startStation = startStation;
+				$scope.map.navi.endStation = endStation;
 
 				//console.log(startStation);
 				var promises = [];
@@ -507,9 +513,23 @@ angular.module('starter', ['ionic', 'uiGmapgoogle-maps'])
 						longitude: $scope.map.navi.orig.lng
 					};
 					$scope.map.zoom = 16;
+					$scope.map.navi.complete = true;
 					$ionicLoading.hide();
+					$scope.map.navi.showDirections();
 				}, function() {
 					$ionicLoading.hide();
+				});
+			},
+			showDirections: function() {
+				var ns = $scope.$new(false);
+				ns.startStation = $scope.map.navi.startStation;
+				ns.endStation = $scope.map.navi.endStation;
+				ns.origin = $scope.map.navi.orig;
+				ns.destination = $scope.map.navi.dest;
+				$ionicPopup.alert({
+					title: 'Directions',
+					templateUrl: 'directions.tpl.html',
+					scope: ns
 				});
 			}
 		}
