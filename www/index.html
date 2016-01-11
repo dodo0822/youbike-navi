@@ -41,6 +41,11 @@
 		<script type="text/ng-template" id="locbutton.tpl.html">
 			<div id="geolocation-button" ng-show="$parent.$parent.$parent.$parent.$parent.$parent.map.navi.state == 0" ng-click="geolocation()" class="button button-small map-button"><i class="icon ion-android-locate"></i</div>
 		</script>
+		<script type="text/ng-template" id="directions.tpl.html">
+			<p>Direction from {{ origin.name }} to {{ destination.name }}:</p>
+			<p>1. Walk to {{ startStation.name }} and rent a bike.</p>
+			<p>2. Ride to {{ endStation.name }} and return the bike.</p>
+		</script>
 		<script type="text/ng-template" id="setorigin.tpl.html">
 			<p>Set the origin to {{ origin.name }} ( {{ origin.lat }}, {{ origin.lng }} ) ?</p>
 		</script>
@@ -59,6 +64,7 @@
 				<ion-header-bar>
 					<button class="button button-icon button-clear ion-navicon" menu-toggle="left"></button>
 					<h1 class="title">YouBike Taipei</h1>
+					<button class="button button-icon button-clear ion-arrow-return-left" ng-if="map.navi.complete" ng-click="map.navi.showDirections()"></button>
 				</ion-header-bar>
 				<ion-view>
 					<ion-content data-tap-disabled="true" class="has-header">
