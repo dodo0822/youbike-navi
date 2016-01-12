@@ -258,14 +258,15 @@ angular.module('starter', ['ionic', 'uiGmapgoogle-maps'])
 					$ionicLoading.hide();
 					$scope.map.navi.path = [];
 					$scope.map.navi.counter = 0;
-
 					var loc = {
 						name: 'Your current location',
-						coords: position.coords
+						coords: {
+							latitude: position.coords.latitude,
+							longitude: position.coords.longitude
+						}
 					};
 					$scope.map.addEndpoint(loc);
 				},function(err){
-					console.log(err);
 					$ionicPopup.alert({
 						title: 'Error',
 						cssClass: 'popup',
@@ -277,7 +278,6 @@ angular.module('starter', ['ionic', 'uiGmapgoogle-maps'])
 				});
 			},
 			click: function(latLng) {
-				
 				$ionicLoading.show({
 					template: 'Fetching location data..'
 				});
@@ -493,7 +493,7 @@ angular.module('starter', ['ionic', 'uiGmapgoogle-maps'])
 
 .controller('ResetButtonController', function($scope) {
 	$scope.reset = function() {
-		$scope.$parent.$parent.$parent.$parent.$parent.$parent.map.navi.reset();
+		$scope.$parent.$parent.$parent.$parent.$parent.$parent.map.navi.reset(true);
 	};
 })
 
