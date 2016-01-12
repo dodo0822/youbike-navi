@@ -47,10 +47,10 @@
 			<p>2. Ride to {{ endStation.name }} and return the bike.</p>
 		</script>
 		<script type="text/ng-template" id="setorigin.tpl.html">
-			<p>Set the origin to {{ origin.name }} ( {{ origin.lat }}, {{ origin.lng }} ) ?</p>
+			<p>Set the origin to {{ origin.name }} ( {{ origin.lat.toFixed(6) }}, {{ origin.lng.toFixed(6) }} ) ?</p>
 		</script>
 		<script type="text/ng-template" id="setdestination.tpl.html">
-			<p>Set the destination to {{ destination.name }} ( {{ destination.lat }}, {{ destination.lng }} ) ?</p>
+			<p>Set the destination to {{ destination.name }} ( {{ destination.lat.toFixed(6) }}, {{ destination.lng.toFixed(6) }} ) ?</p>
 		</script>
 		<script type="text/ng-template" id="help.tpl.html">
 			<p>Hello! Welcome to YouBike Taipei Navigation. Here are some instructions to get you started.</p>
