@@ -49,7 +49,7 @@ ui-gmap-google-map {
 	cursor: pointer;
 }
 
-.help-popup{
+.popup{
 	z-index: 99;
 }
 

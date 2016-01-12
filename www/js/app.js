@@ -28,7 +28,8 @@ angular.module('starter', ['ionic', 'uiGmapgoogle-maps'])
 	$scope.showHelp = function() {
 		$ionicPopup.alert({
 			title: 'Hi',
-			templateUrl: 'help.tpl.html'
+			templateUrl: 'help.tpl.html',
+			cssClass: 'popup'
 		});
 	};
 
@@ -41,7 +42,7 @@ angular.module('starter', ['ionic', 'uiGmapgoogle-maps'])
 			$ionicPopup.alert({
 				title: 'Hi',
 				templateUrl: 'help.tpl.html',
-				cssClass: 'help-popup'
+				cssClass: 'popup'
 			});
 		}
 
@@ -169,6 +170,11 @@ angular.module('starter', ['ionic', 'uiGmapgoogle-maps'])
             	animation: google.maps.Animation.DROP
             };
             $scope.map.navi.endpoints.push(loc);
+            $scope.map.center = {
+            	latitude: $scope.map.navi.orig.lat,
+            	longitude: $scope.map.navi.orig.lng
+            };
+            $scope.map.zoom = 14;
           }
         });
 	    } else if($scope.map.navi.state == 1) {
@@ -260,7 +266,14 @@ angular.module('starter', ['ionic', 'uiGmapgoogle-maps'])
 					$scope.map.addEndpoint(loc);
 				},function(err){
 					console.log(err);
-					$ionicLoading.hide();
+					$ionicPopup.alert({
+						title: 'Error',
+						cssClass: 'popup',
+						template: '<p>An error happened: ' + err.code + ':<br> ' + err.message + '</p>'
+					}).then(function(ok) {
+        		$ionicLoading.hide();	
+        	});
+					
 				});
 			},
 			click: function(latLng) {
