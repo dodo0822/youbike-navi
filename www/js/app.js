@@ -112,6 +112,7 @@ angular.module('starter', ['ionic', 'uiGmapgoogle-maps'])
 			streetViewControl: false
 		},
 		stations: [],
+		stationOptions: {},
 		markersEvents: {
 			click: function(marker, eventName, model, arguments) {
 				$scope.map.window.model = model;
@@ -130,105 +131,87 @@ angular.module('starter', ['ionic', 'uiGmapgoogle-maps'])
 			onSet: function(){
 
 				var site = $scope.map.window.model;
-				var ns = $scope.$new(false);
 				var loc = {
-					name: site.name + "Youbike站",
-					lat: site.coords.latitude,
-					lng: site.coords.longitude
-				};
-				if($scope.map.navi.state == 0) {
-					// open origin confirm
-					$scope.map.navi.path = [];
-					$scope.map.navi.counter = 0;
-					ns.origin = loc;
-					$ionicPopup.confirm({
-						templateUrl: 'setorigin.tpl.html',
-						title: 'Set origin',
-						scope: ns
-					}).then(function(ok) {
-						if(ok) {
-							$scope.map.navi.state = 1;
-							$scope.map.search.placeholder = 'Search destination..';
-							$scope.map.search.value = '';
-							$scope.map.navi.orig = loc ;
-							$scope.map.window.show = false;
-						}
-					});
-				} else if($scope.map.navi.state == 1) {
-					ns.destination = loc;
-					$ionicPopup.confirm({
-						templateUrl: 'setdestination.tpl.html',
-						title: 'Set destination',
-						scope: ns
-					}).then(function(ok) {
-						if(ok) {
-							$scope.map.navi.state = 0;
-							$scope.map.search.placeholder = 'Search origin..';
-							$scope.map.search.value = '';
-							$scope.map.navi.dest = loc;
-							$scope.map.navi.start();
-							$scope.map.window.show = false;
-						}
-					});
+					name:  site.name + " Youbike站",
+					coords: site.coords
 				}
-			}
+				$scope.map.addEndpoint(site);
+			}	
 		},
+		addEndpoint: function(loc){
+			// loc : { name, coords:{latitude,longitude} }
+			var ns = $scope.$new(false);
+			var ngloc = {
+			  name: loc.name,
+			  lat: loc.coords.latitude,
+			  lng: loc.coords.longitude
+			  };
+			if($scope.map.navi.state == 0) {
+        // open origin confirm
+        $scope.map.navi.reset(true);
+        ns.origin = ngloc;
+        $ionicPopup.confirm({
+          templateUrl: 'setorigin.tpl.html',
+          title: 'Set origin',
+          scope: ns
+        }).then(function(ok) {
+          if(ok) {
+            $scope.map.navi.state = 1;
+            $scope.map.search.placeholder = 'Search destination..';
+            $scope.map.search.value = '';
+            $scope.map.navi.orig = ngloc;
+            $scope.map.window.show = false;
+            loc.id = "start";
+            loc.options = { 
+            	zIndex: 9999,
+            	title: 'Start',
+            	label: "S",
+            	animation: google.maps.Animation.DROP
+            };
+            $scope.map.navi.endpoints.push(loc);
+          }
+        });
+	    } else if($scope.map.navi.state == 1) {
+	    	$scope.map.navi.endpoints[0].options.animation = null;
+        ns.destination = ngloc;
+        $ionicPopup.confirm({
+          templateUrl: 'setdestination.tpl.html',
+          title: 'Set destination',
+          scope: ns
+        }).then(function(ok) {
+          if(ok) {
+            $scope.map.navi.reset();
+            $scope.map.navi.dest = ngloc;
+            loc.id = "end";
+            loc.options = { 
+            	zIndex: 9999,
+            	title: "End",
+            	label: "E",
+            	animation: google.maps.Animation.DROP
+            };
+            $scope.map.navi.endpoints.push(loc);
+            setTimeout($scope.map.navi.start,500);
+            
+            $scope.map.window.show = false;
+          }
+        });
+      }
+	  },
 		search: {
 			template: 'search.tpl.html',
 			events: {
 				places_changed: function(s) {
 					var place = s.getPlaces()[0];
-					var loc = place.geometry.location;
-					console.log(place.name);
-					console.log(loc.lat(), loc.lng());
-
-					if($scope.map.navi.state == 0) {
-						// open origin confirm
-						$scope.map.navi.path = [];
-						$scope.map.navi.counter = 0;
-						var ns = $scope.$new(false);
-						ns.origin = {
+					var coords = place.geometry.location;
+					
+					var loc = {
 							name: place.name,
-							lat: loc.lat(),
-							lng: loc.lng()
-						};
-						$ionicPopup.confirm({
-							templateUrl: 'setorigin.tpl.html',
-							title: 'Set origin',
-							scope: ns
-						}).then(function(ok) {
-							if(ok) {
-								$scope.map.navi.state = 1;
-								$scope.map.search.placeholder = 'Search destination..';
-								$scope.map.search.value = '';
-								$scope.map.navi.orig.name = place.name;
-								$scope.map.navi.orig.lat = loc.lat();
-								$scope.map.navi.orig.lng = loc.lng();
+							coords:{
+								latitude: coords.lat(),
+								longitude: coords.lng()
 							}
-						});
-					} else if($scope.map.navi.state == 1) {
-						var ns = $scope.$new(false);
-						ns.destination = {
-							name: place.name,
-							lat: loc.lat(),
-							lng: loc.lng()
-						};
-						$ionicPopup.confirm({
-							templateUrl: 'setdestination.tpl.html',
-							title: 'Set destination',
-							scope: ns
-						}).then(function(ok) {
-							if(ok) {
-								$scope.map.navi.state = 0;
-								$scope.map.search.placeholder = 'Search origin..';
-								$scope.map.search.value = '';
-								$scope.map.navi.dest.name = place.name;
-								$scope.map.navi.dest.lat = loc.lat();
-								$scope.map.navi.dest.lng = loc.lng();
-								$scope.map.navi.start();
-							}
-						});
-					}
+					};
+					$scope.map.addEndpoint(loc);
 				}
 			},
 			placeholder: 'Search origin..',
@@ -245,13 +228,18 @@ angular.module('starter', ['ionic', 'uiGmapgoogle-maps'])
 				lat: 0,
 				lng: 0
 			},
+			endpoints: [],
 			startStation: {},
 			endStation: {},
 			path: [],
 			state: 0,
 			counter: 0,
 			complete: false,
-			reset: function() {
+			reset: function(cleanEndpoints) {
+				if(typeof(cleanEndpoints)!='undefined' && cleanEndpoints){
+					$scope.map.navi.endpoints = [];
+				}
+				$scope.map.navi.path = [];
 				$scope.map.navi.state = 0;
 				$scope.map.search.placeholder = 'Search origin..';
 				$scope.map.search.value = '';
@@ -264,27 +252,14 @@ angular.module('starter', ['ionic', 'uiGmapgoogle-maps'])
 					$ionicLoading.hide();
 					$scope.map.navi.path = [];
 					$scope.map.navi.counter = 0;
-					var ns = $scope.$new(false);
-					ns.origin = {
+
+					var loc = {
 						name: 'Your current location',
-						lat: position.coords.latitude,
-						lng: position.coords.longitude
+						coords: position.coords
 					};
-					$ionicPopup.confirm({
-						templateUrl: 'setorigin.tpl.html',
-						title: 'Set origin',
-						scope: ns
-					}).then(function(ok) {
-						if(ok) {
-							$scope.map.navi.state = 1;
-							$scope.map.search.placeholder = 'Search destination..';
-							$scope.map.search.value = '';
-							$scope.map.navi.orig.name = 'Your current location';
-							$scope.map.navi.orig.lat = position.coords.latitude;
-							$scope.map.navi.orig.lng = position.coords.longitude;
-						}
-					});
+					$scope.map.addEndpoint(loc);
 				},function(err){
+					console.log(err);
 					$ionicLoading.hide();
 				});
 			},
@@ -295,50 +270,17 @@ angular.module('starter', ['ionic', 'uiGmapgoogle-maps'])
 				});
 				GmapGeocoder.getLocation(latLng).then(function(resp){
 					$ionicLoading.hide();
-					var ns = $scope.$new(false);
 					var loc = {
 							name: resp.formatted_address,
-							lat: resp.geometry.location.lat(),
-							lng: resp.geometry.location.lng(),
+							coords: {
+								latitude:resp.geometry.location.lat(),
+								longitude:resp.geometry.location.lng(),
+							}
 						};
-					if( $scope.map.navi.state == 0){
-						$scope.map.navi.path = [];
-						$scope.map.navi.counter = 0;
-						ns.origin = loc;
-						$ionicPopup.confirm({
-							templateUrl: 'setorigin.tpl.html',
-							title: 'Set origin',
-							scope: ns
-						}).then(function(ok){
-							if(ok){
-								$scope.map.navi.state = 1;
-								$scope.map.search.placeholder = 'Search destination..';
-								$scope.map.search.value = '';
-								$scope.map.navi.orig = ns.origin;	
-							}
-						});
-					}
-					else{
-						ns.destination = loc;
-						$ionicPopup.confirm({
-							templateUrl: 'setdestination.tpl.html',
-							title: 'Set destination',
-							scope: ns
-						}).then(function(ok){
-							if(ok){
-								$scope.map.navi.state = 0;
-								$scope.map.search.placeholder = 'Search origin..';
-								$scope.map.search.value = '';
-								$scope.map.navi.dest = ns.destination;
-								$scope.map.navi.start();
-							}
-						})
-					}
+					$scope.map.addEndpoint(loc);
 					$q.resolve();
 				},function(status){
-					$ionicLoading.show({
-						template: 'Fetching location data..'
-					});
+					$ionicLoading.hide();
 					$ionicPopup.alert({
 						title: 'Error',
 						template: '<p>Can\'t get location: ' + status + '</p>'

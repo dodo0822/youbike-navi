@@ -78,6 +78,7 @@
 									<button class="button button-positive button-small button-block" ng-click="$parent.map.window.onSet()">{{ map.navi.state ? "Set as destination" : "Set as origin"}}</button>
 								</div>
 							</ui-gmap-window>
+							<ui-gmap-markers models="map.navi.endpoints" coords="'coords'" idkey="m.id" options="'options'"></ui-gmap-marker>
 							<ui-gmap-markers models="map.stations" coords="'coords'" events="map.markersEvents" icon="'icon'"></ui-gmap-markers>
 							<ui-gmap-polylines models="map.navi.path" path="'coords'" static="true" stroke="'stroke'" visible="'visible'"></ui-gmap-polylines>
 							<ui-gmap-map-control template="mapbutton.tpl.html" controller="ResetButtonController" position="right-bottom" index="-1"></ui-gmap-map-control>
